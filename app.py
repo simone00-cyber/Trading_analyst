@@ -2016,11 +2016,7 @@ with st.sidebar:
         st.cache_data.clear()
         st.rerun()
 
-    st.markdown(
-        "<div class='small-note'>Yahoo Finance via yfinance. "
-        "Interfaccia ispirata ai terminali professionali; nessuna affiliazione con Bloomberg.</div>",
-        unsafe_allow_html=True,
-    )
+   
 
 if page == "GLOBAL OVERVIEW":
     render_global_overview()
