@@ -48,18 +48,15 @@ from caruso_analysis import (
 
 import requests
 
-
 url = (
     "https://portwatch.imf.org/"
-    "api/search/v1/collections/all/items?limit=20"
+    "api/search/v1/collections/all/items"
+    "?q=chokepoint"
 )
-r = requests.get(url, timeout=30)
 
-st.write(r.status_code)
+r = requests.get(url)
 
-data = r.json()
-
-st.json(data)
+st.json(r.json())
 
 # =============================================================================
 # CONFIGURAZIONE GRAFICA
