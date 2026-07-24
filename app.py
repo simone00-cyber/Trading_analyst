@@ -39,6 +39,7 @@ from caruso_analysis import (
     TimeframeResult,
     calculate_composite_momentum,
     download_prices,
+    download_prices_raw,
     resample_ohlc,
     strategy_from_matrix,
     summarize_timeframe,
@@ -1723,6 +1724,7 @@ def load_analysis(
     period: str,
 ) -> Tuple[pd.DataFrame, Dict[str, pd.DataFrame], Dict[str, TimeframeResult], Dict[str, str]]:
     daily = download_prices(ticker, period)
+    daily_raw = download_prices_raw(ticker, period)
     frames: Dict[str, pd.DataFrame] = {}
     summaries: Dict[str, TimeframeResult] = {}
     errors: Dict[str, str] = {}
@@ -1937,7 +1939,7 @@ def render_security_report() -> None:
 
     tabs = st.tabs(["PRICE", "WEEKLY CM", "MONTHLY CM", "QUARTERLY CM"])
     with tabs[0]:
-        st.plotly_chart(create_price_chart(daily, ticker, chart_years), use_container_width=True)
+        st.plotly_chart(create_price_chart(daily_raw, ticker, chart_years), use_container_width=True)
     with tabs[1]:
         if "WEEKLY" in frames:
             st.plotly_chart(create_composite_chart(frames["WEEKLY"], ticker, "WEEKLY"), use_container_width=True)
