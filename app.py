@@ -46,25 +46,40 @@ from caruso_analysis import (
     summarize_timeframe,
 )
 
-import requests
+import asyncio
+import json
+import websockets
 
-url = (
-    "https://services9.arcgis.com/"
-    "weJ1QsnbMYJlCHdG/"
-    "arcgis/rest/services/"
-    "Daily_Chokepoints_Data/"
-    "FeatureServer/0/query"
-)
+API_KEY = "a7d937bf03b0c15b190bf70fe6057072260500ab"
 
-params = {
-    "where": "1=1",
-    "outFields": "*",
-    "f": "json"
-}
+async def main():
+    uri = "wss://stream.aisstream.io/v0/stream"
 
-r = requests.get(url, params=params)
+    async with websockets.connect(uri) as ws:
 
-st.json(r.json())
+        subscription = {
+            "APIKey": API_KEY,
+            "BoundingBoxes": [
+                [[24.0, 55.0], [28.5, 59.5]]
+            ]
+        }
+
+        await ws.send(json.dumps(subscription))
+
+        print("Connesso. In attesa di dati AIS...")
+
+        count = 0
+
+        while count < 10:
+            msg = await ws.recv()
+            data = json.loads(msg)
+
+            print(json.dumps(data, indent=2)[:1000])
+            print("-" * 80)
+
+            count += 1
+
+asyncio.run(main())
 
 # =============================================================================
 # CONFIGURAZIONE GRAFICA
