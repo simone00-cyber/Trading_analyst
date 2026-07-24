@@ -46,7 +46,26 @@ from caruso_analysis import (
     summarize_timeframe,
 )
 
+import requests
+url = "https://api.kpler.com/v2/maritime/ais-latest"
 
+headers = {
+    "Authorization": "Basic YOUR_KEY",
+    "Accept": "application/json"
+}
+
+response = requests.get(
+    url,
+    headers=headers,
+    timeout=30
+)
+
+print(response.status_code)
+
+data = response.json()
+
+print(type(data))
+print(data)
 # =============================================================================
 # CONFIGURAZIONE GRAFICA
 # =============================================================================
