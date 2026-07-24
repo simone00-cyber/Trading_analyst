@@ -47,13 +47,19 @@ from caruso_analysis import (
 )
 
 import requests
-url = "https://portwatch.imf.org/api/search/v1/collections"
 
-r = requests.get(url)
 
-collections = r.json()
+url = (
+    "https://portwatch.imf.org/"
+    "api/search/v1/collections/all/items?limit=20"
+)
+r = requests.get(url, timeout=30)
 
-st.write(collections)
+st.write(r.status_code)
+
+data = r.json()
+
+st.json(data)
 
 # =============================================================================
 # CONFIGURAZIONE GRAFICA
