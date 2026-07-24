@@ -245,6 +245,7 @@ EQUITY_INDICES: Dict[str, str] = {
     "HANG SENG": "^HSI",
     "SHANGHAI": "000001.SS",
     "SENSEX": "^BSESN",
+    "KOSPI": "^KS11",
 }
 
 FX_UNIVERSE: Dict[str, str] = {
@@ -729,9 +730,9 @@ def render_global_overview() -> None:
         st.error("Yahoo Finance non ha restituito dati per gli indici.")
         return
 
-    card_names = ["S&P 500", "NASDAQ", "FTSE MIB", "DAX", "NIKKEI 225", "VIX"]
+    card_names = ["S&P 500", "NASDAQ", "FTSE MIB", "DAX", "NIKKEI 225", "VIX","KOSPI"]
     indexed = table.set_index("Strumento")
-    cols = st.columns(6)
+    cols = st.columns(7)
     for col, name in zip(cols, card_names):
         if name not in indexed.index:
             col.metric(name, "N/D")
@@ -745,7 +746,7 @@ def render_global_overview() -> None:
         st.markdown("<div class='terminal-subheader'>RELATIVE PERFORMANCE</div>", unsafe_allow_html=True)
         reverse = {ticker: name for name, ticker in EQUITY_INDICES.items()}
         renamed = close.rename(columns=reverse)
-        defaults = [name for name in ["S&P 500", "NASDAQ", "EURO STOXX 50", "FTSE MIB", "DAX", "NIKKEI 225"] if name in renamed.columns]
+        defaults = [name for name in ["S&P 500", "NASDAQ", "EURO STOXX 50", "FTSE MIB", "DAX", "NIKKEI 225","KOSPI"] if name in renamed.columns]
         selected = st.multiselect(
             "Indici",
             options=list(renamed.columns),
