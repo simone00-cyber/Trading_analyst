@@ -1873,6 +1873,7 @@ def render_summary_table(summaries: Dict[str, TimeframeResult]) -> None:
                 "COMPOSITE": round(item.composite, 2),
                 "PRECEDENTE": round(item.previous_composite, 2),
                 "DIREZIONE": item.direction,
+                "QUADRANTE": item.quadrant,
                 "ZONA": item.position,
                 "FLESSO": item.turn,
             }
