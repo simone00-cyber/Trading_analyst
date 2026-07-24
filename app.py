@@ -49,12 +49,20 @@ from caruso_analysis import (
 import requests
 
 url = (
-    "https://portwatch.imf.org/"
-    "api/search/v1/collections/all/items"
-    "?q=chokepoint"
+    "https://services9.arcgis.com/"
+    "weJ1QsnbMYJlCHdG/"
+    "arcgis/rest/services/"
+    "Daily_Chokepoints_Data/"
+    "FeatureServer/0/query"
 )
 
-r = requests.get(url)
+params = {
+    "where": "1=1",
+    "outFields": "*",
+    "f": "json"
+}
+
+r = requests.get(url, params=params)
 
 st.json(r.json())
 
