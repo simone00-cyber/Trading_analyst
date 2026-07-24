@@ -445,7 +445,7 @@ def download_prices(ticker: str, period: str) -> pd.DataFrame:
         ticker,
         period=period,
         interval="1d",
-        auto_adjust=False,
+        auto_adjust=True,
         progress=False,
         group_by="column",
     )
