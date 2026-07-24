@@ -47,47 +47,13 @@ from caruso_analysis import (
 )
 
 import requests
-url = "https://api.kpler.com/v2/maritime/ais-latest"
+url = "https://portwatch.imf.org/api/search/v1/collections"
 
-headers = {
-    "Authorization": "Basic YOUR_KEY",
-    "Accept": "application/json"
-}
+r = requests.get(url)
 
-response = requests.get(
-    url,
-    headers=headers,
-    timeout=30
-)
+collections = r.json()
 
-
-
-data = response.json()
-response = requests.get(
-    url,
-    headers=headers,
-    timeout=30
-)
-
-st.markdown("### KPLER DEBUG")
-
-st.write("Status:", response.status_code)
-
-try:
-    data = response.json()
-
-    st.write("Type:", type(data))
-
-    if isinstance(data, list):
-        st.write("Rows:", len(data))
-        st.json(data[:3])
-
-    else:
-        st.json(data)
-
-except Exception as e:
-    st.error(str(e))
-    st.text(response.text)
+st.write(collections)
 
 # =============================================================================
 # CONFIGURAZIONE GRAFICA
