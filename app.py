@@ -1899,7 +1899,7 @@ def render_security_report() -> None:
 
     try:
         with st.spinner(f"Analisi di {ticker} in corso..."):
-            daily, frames, summaries, errors = load_analysis(ticker, period)
+            daily,daily_raw, frames, summaries, errors = load_analysis(ticker, period)
     except Exception as error:
         st.error(f"Impossibile completare l'analisi: {error}")
         return
