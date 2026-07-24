@@ -48,6 +48,7 @@ class TimeframeResult:
     composite: float
     previous_composite: float
     direction: str
+    quadrant: str
     position: str
     excess: str
     turn: str
@@ -293,7 +294,29 @@ def slope_direction(current: float, previous: float) -> str:
         return "DOWN"
     return "FLAT"
 
+def quadrant(current_cm: float, previous_cm: float) -> str:
+    """
+    Classificazione Caruso U/A/D/T.
 
+    U = sotto zero e sale
+    A = sopra zero e sale
+    D = sopra zero e scende
+    T = sotto zero e scende
+    """
+
+    if current_cm > 0 and current_cm > previous_cm:
+        return "A"
+
+    if current_cm < 0 and current_cm > previous_cm:
+        return "U"
+
+    if current_cm > 0 and current_cm < previous_cm:
+        return "D"
+
+    if current_cm < 0 and current_cm < previous_cm:
+        return "T"
+
+    return "N/A"
 def latest_turn(composite: pd.Series) -> str:
     """
     Individua il flesso più recente della pendenza del CM.
@@ -348,6 +371,7 @@ def summarize_timeframe(
         composite=current_cm,
         previous_composite=previous_cm,
         direction=slope_direction(current_cm, previous_cm),
+        quadrant=quadrant(current_cm, previous_cm),
         position=classify_position(current_cm),
         excess=classify_excess(current_cm),
         turn=latest_turn(clean["Composite"]),
@@ -501,6 +525,7 @@ def print_report(
         print(f"  Composite:        {result.composite:.2f}")
         print(f"  Composite prec.:  {result.previous_composite:.2f}")
         print(f"  Direzione:        {result.direction}")
+        print(f" Quadrante:         {result.quadrant}")
         print(f"  Posizione:        {result.position}")
         print(f"  Eccesso:          {result.excess}")
         print(f"  Flesso:           {result.turn}")
