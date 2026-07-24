@@ -1738,7 +1738,7 @@ def load_analysis(
         except Exception as error:
             errors[timeframe] = str(error)
 
-    return daily, frames, summaries, errors
+    return daily,daily_raw, frames, summaries, errors
 
 
 def direction_word(direction: str) -> str:
