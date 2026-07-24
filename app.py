@@ -60,12 +60,35 @@ response = requests.get(
     timeout=30
 )
 
-print(response.status_code)
+
 
 data = response.json()
+response = requests.get(
+    url,
+    headers=headers,
+    timeout=30
+)
 
-print(type(data))
-print(data)
+st.markdown("### KPLER DEBUG")
+
+st.write("Status:", response.status_code)
+
+try:
+    data = response.json()
+
+    st.write("Type:", type(data))
+
+    if isinstance(data, list):
+        st.write("Rows:", len(data))
+        st.json(data[:3])
+
+    else:
+        st.json(data)
+
+except Exception as e:
+    st.error(str(e))
+    st.text(response.text)
+
 # =============================================================================
 # CONFIGURAZIONE GRAFICA
 # =============================================================================
