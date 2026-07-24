@@ -470,7 +470,33 @@ def download_prices(ticker: str, period: str) -> pd.DataFrame:
         raise ValueError(f"Dati scaricati senza colonne richieste: {missing}")
 
     return data[required].dropna(subset=["Open", "High", "Low", "Close"])
+def download_prices_raw(ticker: str, period: str) -> pd.DataFrame:
 
+    import yfinance as yf
+
+    data = yf.download(
+        ticker,
+        period=period,
+        interval="1d",
+        auto_adjust=False,
+        progress=False,
+        group_by="column",
+    )
+
+    if data.empty:
+        raise ValueError(f"Nessun dato trovato per '{ticker}'.")
+
+    if isinstance(data.columns, pd.MultiIndex):
+        if ticker in data.columns.get_level_values(-1):
+            data = data.xs(ticker, axis=1, level=-1)
+        else:
+            data.columns = data.columns.get_level_values(0)
+
+    required = ["Open", "High", "Low", "Close", "Volume"]
+
+    return data[required].dropna(
+        subset=["Open", "High", "Low", "Close"]
+    )
 
 def analyze_ticker(
     ticker: str,
