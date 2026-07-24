@@ -31,6 +31,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import plotly.express as px
 import streamlit as st
 import yfinance as yf
 
@@ -615,8 +616,79 @@ def create_yield_curve_chart(rates: pd.DataFrame) -> go.Figure:
     )
     fig.update_layout(title="US TREASURY YIELD CURVE", yaxis_title="Yield %")
     return apply_terminal_layout(fig, 440)
+def create_shipping_risk_gauge(value):
 
+    fig = go.Figure(
+        go.Indicator(
+            mode="gauge+number",
+            value=value,
+            title={"text": "SHIPPING RISK INDEX"},
+            gauge={
+                "axis": {"range": [0,100]},
+                "bar": {"color": ORANGE},
 
+                "steps": [
+                    {"range":[0,25],"color":"#0d3f1f"},
+                    {"range":[25,50],"color":"#274d15"},
+                    {"range":[50,75],"color":"#5b4700"},
+                    {"range":[75,100],"color":"#5f1111"}
+                ],
+            }
+        )
+    )
+
+    return apply_terminal_layout(fig, 320)
+def create_hormuz_map(ships):
+
+    color_map = {
+        "Crude Tanker": ORANGE,
+        "LNG": CYAN,
+        "Container": BLUE,
+        "Bulk": PURPLE,
+    }
+
+    fig = px.scatter_mapbox(
+        ships,
+        lat="lat",
+        lon="lon",
+        color="Type",
+        hover_name="Ship",
+        color_discrete_map=color_map,
+        zoom=6,
+        height=550,
+    )
+
+    fig.update_layout(
+        mapbox_style="carto-darkmatter",
+        paper_bgcolor=BG,
+        margin=dict(l=0, r=0, t=0, b=0),
+    )
+
+    return fig
+def build_shipping_comment(latest, avg30):
+
+    delta = ((latest/avg30)-1)*100
+
+    risk = "LOW"
+
+    if delta < -5:
+        risk = "ELEVATED"
+
+    if delta < -10:
+        risk = "HIGH"
+
+    return (
+        f"Hormuz traffic is {delta:+.1f}% versus "
+        f"the 30-day average. "
+
+        f"Current flow regime suggests "
+        f"{risk.lower()} logistics risk. "
+
+        f"Persistent weakness in crude tanker "
+        f"traffic historically coincides with "
+        f"tighter energy market conditions and "
+        f"higher Brent sensitivity."
+    )
 # =============================================================================
 # HEADER E TICKER STRIP
 # =============================================================================
@@ -978,8 +1050,180 @@ def render_global_macro() -> None:
     comment = build_macro_comment(rates, fx_table, commodity_table, close)
     st.markdown("<div class='terminal-subheader'>MACRO STRATEGIST COMMENT</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='report-box'>{comment}</div>", unsafe_allow_html=True)
+def render_shipping():
 
+    st.markdown(
+        "<div class='terminal-header'>GLOBAL SHIPPING & ENERGY FLOWS</div>",
+        unsafe_allow_html=True
+    )
 
+    traffic, ships = get_shipping_data()
+
+    latest = float(traffic["Hormuz"].iloc[-1])
+    avg30 = float(traffic["Hormuz"].tail(30).mean())
+
+    crude = 54
+    lng = 18
+
+    risk_index = min(
+        100,
+        max(
+            10,
+            int(50 + (avg30-latest)*2)
+        )
+    )
+
+    c1,c2,c3,c4 = st.columns(4)
+
+    c1.metric(
+        "HORMUZ TRANSITS",
+        f"{latest:.0f}",
+        f"{((latest/avg30)-1)*100:+.1f}%"
+    )
+
+    c2.metric(
+        "CRUDE TANKERS",
+        crude
+    )
+
+    c3.metric(
+        "LNG CARRIERS",
+        lng
+    )
+
+    c4.metric(
+        "RISK INDEX",
+        risk_index
+    )
+
+    left,right = st.columns([2,1])
+
+    with left:
+
+        st.plotly_chart(
+            create_hormuz_map(ships),
+            use_container_width=True
+        )
+
+    with right:
+
+        st.plotly_chart(
+            create_shipping_risk_gauge(risk_index),
+            use_container_width=True
+        )
+
+    st.markdown(
+        "<div class='terminal-subheader'>HORMUZ TRAFFIC TREND</div>",
+        unsafe_allow_html=True
+    )
+
+    trend = go.Figure()
+
+    trend.add_trace(
+        go.Scatter(
+            x=traffic["Date"],
+            y=traffic["Hormuz"],
+            name="Traffic",
+            line=dict(color=ORANGE,width=2)
+        )
+    )
+
+    trend.add_trace(
+        go.Scatter(
+            x=traffic["Date"],
+            y=traffic["Hormuz"].rolling(30).mean(),
+            name="30D Average",
+            line=dict(color=BLUE,width=2)
+        )
+    )
+
+    st.plotly_chart(
+        apply_terminal_layout(
+            trend,
+            420
+        ),
+        use_container_width=True
+    )
+
+    comment = build_shipping_comment(
+        latest,
+        avg30
+    )
+
+    st.markdown(
+        "<div class='terminal-subheader'>SHIPPING STRATEGIST COMMENT</div>",
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        f"<div class='report-box'>{comment}</div>",
+        unsafe_allow_html=True
+    )
+# =============================================================================
+# SHIPPING & ENERGY FLOWS
+# =============================================================================
+
+@st.cache_data(ttl=3600)
+def get_shipping_data():
+
+    np.random.seed(42)
+
+    dates = pd.date_range(
+        end=pd.Timestamp.today(),
+        periods=180,
+        freq="D"
+    )
+
+    traffic = pd.DataFrame({
+        "Date": dates,
+        "Hormuz": np.random.normal(115, 8, len(dates)).cumsum()/20,
+    })
+
+    traffic["Hormuz"] = (
+        120
+        + np.sin(np.arange(len(dates))/15)*10
+        + np.random.normal(0, 4, len(dates))
+    )
+
+    ships = pd.DataFrame({
+        "Ship": [
+            "VLCC Alpha",
+            "LNG Falcon",
+            "Box Asia",
+            "Bulk Star",
+            "VLCC Titan",
+            "LNG Horizon",
+        ],
+
+        "Type": [
+            "Crude Tanker",
+            "LNG",
+            "Container",
+            "Bulk",
+            "Crude Tanker",
+            "LNG",
+        ],
+
+        "lat": [
+            26.40,
+            26.55,
+            26.20,
+            26.75,
+            26.10,
+            26.35,
+        ],
+
+        "lon": [
+            56.10,
+            56.30,
+            56.45,
+            56.00,
+            56.60,
+            56.20,
+        ]
+    })
+
+    return traffic, ships
 # =============================================================================
 # MARKET REGIME V3 - STRUCTURAL / TACTICAL / DAILY
 # =============================================================================
@@ -2008,6 +2252,7 @@ with st.sidebar:
         [
             "GLOBAL OVERVIEW",
             "GLOBAL MACRO",
+            "GLOBAL SHIPPING",
             "MARKET REGIME",
             "SECURITY REPORT",
             "METHODOLOGY",
@@ -2024,11 +2269,18 @@ with st.sidebar:
 
 if page == "GLOBAL OVERVIEW":
     render_global_overview()
+
 elif page == "GLOBAL MACRO":
     render_global_macro()
+
+elif page == "GLOBAL SHIPPING":
+    render_shipping()
+
 elif page == "MARKET REGIME":
     render_market_regime()
+
 elif page == "SECURITY REPORT":
     render_security_report()
+
 else:
     render_methodology()
