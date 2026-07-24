@@ -46,40 +46,7 @@ from caruso_analysis import (
     summarize_timeframe,
 )
 
-import asyncio
-import json
-import websockets
 
-API_KEY = "a7d937bf03b0c15b190bf70fe6057072260500ab"
-
-async def main():
-    uri = "wss://stream.aisstream.io/v0/stream"
-
-    async with websockets.connect(uri) as ws:
-
-        subscription = {
-            "APIKey": API_KEY,
-            "BoundingBoxes": [
-                [[24.0, 55.0], [28.5, 59.5]]
-            ]
-        }
-
-        await ws.send(json.dumps(subscription))
-
-        print("Connesso. In attesa di dati AIS...")
-
-        count = 0
-
-        while count < 10:
-            msg = await ws.recv()
-            data = json.loads(msg)
-
-            print(json.dumps(data, indent=2)[:1000])
-            print("-" * 80)
-
-            count += 1
-
-asyncio.run(main())
 
 # =============================================================================
 # CONFIGURAZIONE GRAFICA
